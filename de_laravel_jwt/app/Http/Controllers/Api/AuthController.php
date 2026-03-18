@@ -9,7 +9,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use App\Models\User;
-use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
@@ -39,24 +38,13 @@ class AuthController extends Controller
             'sub' => $user->id,
             'iat' => time(),
             'exp' => time() + $ttl,
+            'name' => $user->name,
         ];
 
         $token = JWT::encode($payload, $secret, $alg);
 
         return response()->json([
-            'at' => $token,
-            'user' => [
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
-            ],
-        ]);
-    }
-
-    public function user(Request $request): JsonResponse
-    {
-        return response()->json([
-            'user' => $request->user(),
+            'at' => $token
         ]);
     }
 }
