@@ -32,7 +32,10 @@ export function useNotifications() {
     }
   }
 
-  const markRead = async (id: string) => {
+  const markRead = async (id?: string) => {
+    if (!id) {
+      return
+    }
     await notificationApi.markRead(id)
     const target = notifications.value.find((item) => item.id === id)
     if (target && !target.read_at) {
@@ -54,18 +57,32 @@ export function useNotifications() {
     const echo = getEcho()
 
     if (!channelName || !echo) {
+      console.debug('[notifications] skip subscribe', {
+        channelName,
+        hasEcho: Boolean(echo),
+      })
       return
     }
 
     subscribedChannelName = channelName
 
-    echo.private(channelName).notification((notification: NotificationItem) => {
-      const exists = notifications.value.some((item) => item.id === notification.id)
+    echo.private(channelName).notification((notification: any) => {
+      const notificationItem: NotificationItem = {
+        id: notification.id,
+        type: notification.type,
+        data: {
+          message: notification.message,
+        },
+        read_at: null,
+        created_at: new Date().toISOString(),
+      }
+
+      const exists = notifications.value.some((item) => item.id === notificationItem.id)
       if (exists) {
         return
       }
 
-      notifications.value = [notification, ...notifications.value]
+      notifications.value = [notificationItem, ...notifications.value]
     })
   }
 
