@@ -146,9 +146,17 @@ h1 {
   border: 1px solid #e5e7eb;
   border-radius: 10px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
   z-index: 20;
 }
 .notification-header {
+  position: sticky;
+  top: 0;
+  background-color: white;
   display: flex;
   justify-content: space-between;
   align-items: center;

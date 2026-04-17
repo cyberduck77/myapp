@@ -9,6 +9,5 @@
 <style>
 #app {
   font-family: system-ui, -apple-system, sans-serif;
-  min-height: 100vh;
 }
 </style>
