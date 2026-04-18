@@ -1,0 +1,17 @@
+{
+	"folders": [
+		{
+			"name": "server",
+			"path": "server"
+		},
+		{
+			"name": "app",
+			"path": "app"
+		},
+		{
+			"name": "myapp",
+			"path": "."
+		}
+	],
+	"settings": {}
+}
