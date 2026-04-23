@@ -77,7 +77,7 @@ class JwtGuard implements Guard
         }
 
         if (count($parts) === 2) {
-            $cookieName = $this->config['cookie_name'] ?? 'jwt_signature';
+            $cookieName = $this->config['signature_cookie']['name'] ?? 'at_sign';
             $signature = $this->request->cookie($cookieName);
             if ($signature === null || $signature === '') {
                 return null;

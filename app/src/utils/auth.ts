@@ -20,7 +20,7 @@ export const getUserPayload = (): UserPayload | null => {
   const accessToken = localStorage.getItem('at')
   if (!accessToken) return null
   const parts = accessToken.split('.')
-  if (parts.length !== 3) return null
+  if (parts.length < 2) return null
   try {
     const base64Url = parts[1] ?? ''
     const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')

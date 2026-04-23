@@ -1,12 +1,9 @@
 import Echo from 'laravel-echo'
 import Pusher from 'pusher-js'
 import { getAccessToken, getUserPayload } from '@/utils/auth'
+import { api } from '@/api/client'
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000/api'
-
-function getBroadcastAuthEndpoint(): string {
-  return API_BASE.replace(/\/api\/?$/, '/broadcasting/auth')
-}
 
 function getEchoConfig() {
   const key = import.meta.env.VITE_PUSHER_APP_KEY as string | undefined
@@ -21,12 +18,28 @@ function getEchoConfig() {
     key,
     cluster,
     forceTLS: true,
-    authEndpoint: getBroadcastAuthEndpoint(),
-    auth: {
-      headers: {
-        Authorization: `Bearer ${getAccessToken() ?? ''}`,
+    authorizer: (channel: { name: string }) => ({
+      authorize: async (socketId: string, callback: (error: unknown, data: unknown) => void) => {
+        try {
+          const response = await api.post(
+            '/broadcasting/auth',
+            {
+              socket_id: socketId,
+              channel_name: channel.name,
+            },
+            {
+              baseURL: API_BASE.replace(/\/api\/?$/, ''),
+              headers: {
+                Authorization: `Bearer ${getAccessToken() ?? ''}`,
+              },
+            }
+          )
+          callback(null, response.data)
+        } catch (error) {
+          callback(error, null)
+        }
       },
-    },
+    }),
   }
 }
 

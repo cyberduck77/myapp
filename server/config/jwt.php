@@ -20,7 +20,13 @@ return [
     | When the token is split, the signature segment is sent in this cookie.
     |
     */
-    'signature_cookie' => env('JWT_SIGNATURE_COOKIE', 'jwt_signature'),
+    'signature_cookie' => [
+        'name' => env('JWT_SIGNATURE_COOKIE_NAME', 'at_sign'),
+        'secure' => env('JWT_SIGNATURE_COOKIE_SECURE', false),
+        'http_only' => env('JWT_SIGNATURE_COOKIE_HTTP_ONLY', true),
+        'same_site' => env('JWT_SIGNATURE_COOKIE_SAME_SITE', 'lax'),
+        'partitioned' => env('JWT_SIGNATURE_COOKIE_PARTITIONED', false),
+    ],
 
     /*
     |--------------------------------------------------------------------------
