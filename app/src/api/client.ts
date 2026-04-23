@@ -1,10 +1,19 @@
 import axios from 'axios'
-import type { AxiosInstance, AxiosRequestHeaders } from 'axios'
-import { getAccessToken } from '@/utils/auth'
+import type { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosRequestHeaders } from 'axios'
+import { attemptAuth, getAccessToken, logout } from '@/utils/auth'
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000/api'
 
 export const api: AxiosInstance = axios.create({
+  baseURL: API_BASE,
+  withCredentials: true,
+  headers: {
+    Accept: 'application/json',
+    'Content-Type': 'application/json',
+  },
+})
+
+const refreshClient: AxiosInstance = axios.create({
   baseURL: API_BASE,
   withCredentials: true,
   headers: {
@@ -24,6 +33,55 @@ api.interceptors.request.use((config) => {
 
   return config
 })
+
+let refreshRequest: Promise<string | null> | null = null
+
+const refreshAccessToken = async (): Promise<string | null> => {
+  const response = await refreshClient.post<{ at: string }>('/refresh')
+  const nextAccessToken = response.data?.at ?? null
+  attemptAuth(nextAccessToken)
+  return nextAccessToken
+}
+
+api.interceptors.response.use(
+  (response) => response,
+  async (error: AxiosError) => {
+    const status = error.response?.status
+    const originalRequest = error.config as (AxiosRequestConfig & { _retry?: boolean }) | undefined
+    const requestUrl = originalRequest?.url ?? ''
+    const shouldSkip =
+      requestUrl.includes('/login') || requestUrl.includes('/refresh') || requestUrl.includes('/logout')
+
+    if (status !== 401 || !originalRequest || originalRequest._retry || shouldSkip) {
+      return Promise.reject(error)
+    }
+
+    originalRequest._retry = true
+
+    try {
+      if (!refreshRequest) {
+        refreshRequest = refreshAccessToken().finally(() => {
+          refreshRequest = null
+        })
+      }
+
+      const nextAccessToken = await refreshRequest
+      if (!nextAccessToken) {
+        throw error
+      }
+
+      if (!originalRequest.headers) {
+        originalRequest.headers = {} as AxiosRequestHeaders
+      }
+      originalRequest.headers.Authorization = `Bearer ${nextAccessToken}`
+
+      return api(originalRequest)
+    } catch (refreshError) {
+      logout()
+      return Promise.reject(refreshError)
+    }
+  }
+)
 
 export type PushSubscriptionPayload = {
   endpoint: string
@@ -67,5 +125,11 @@ export const notificationApi = {
   },
   markAllRead() {
     return api.patch('/notifications/read-all').then((r) => r.data)
+  },
+}
+
+export const authApi = {
+  logout() {
+    return api.post('/logout').then((r) => r.data)
   },
 }

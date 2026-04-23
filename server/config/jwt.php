@@ -30,6 +30,23 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Refresh Token Cookie
+    |--------------------------------------------------------------------------
+    |
+    | Refresh token is stored as an opaque random value in this HttpOnly cookie.
+    |
+    */
+    'refresh_cookie' => [
+        'lifetime' => env('JWT_REFRESH_COOKIE_LIFETIME', 60 * 24 * 7), //minutes
+        'name' => env('JWT_REFRESH_COOKIE_NAME', 'rt'),
+        'secure' => env('JWT_REFRESH_COOKIE_SECURE', false),
+        'http_only' => env('JWT_REFRESH_COOKIE_HTTP_ONLY', true),
+        'same_site' => env('JWT_REFRESH_COOKIE_SAME_SITE', 'lax'),
+        'partitioned' => env('JWT_REFRESH_COOKIE_PARTITIONED', false),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Leeway (seconds)
     |--------------------------------------------------------------------------
     |
@@ -53,10 +70,10 @@ return [
     | TTL (seconds)
     |--------------------------------------------------------------------------
     |
-    | Token lifetime in seconds (e.g. 3600 = 1 hour).
+    | Token lifetime in seconds (e.g. 300 = 5 minutes).
     |
     */
-    'ttl_seconds' => (int) env('JWT_TTL', 3600),
+    'ttl_seconds' => (int) env('JWT_TTL', 60 * 5),
 
     /*
     |--------------------------------------------------------------------------
