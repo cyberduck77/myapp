@@ -2,7 +2,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { getUserPayload, logout } from '@/utils/auth'
-import { api } from '@/api/client'
+import { api, authApi } from '@/api/client'
 import DashboardHeader from '@/components/DashboardHeader.vue'
 
 const router = useRouter()
@@ -15,7 +15,12 @@ onMounted(async () => {
   message.value = dashboardResponse.data.message
 })
 
-function handleLogout() {
+async function handleLogout() {
+  try {
+    await authApi.logout()
+  } catch {
+    // Ignore network/logout endpoint failures and clear client auth anyway.
+  }
   logout()
   router.push('/login')
 }
